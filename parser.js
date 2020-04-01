@@ -2,6 +2,11 @@
 //LL(1) parsing table for logical expressions
 
 var table = {
+    "S" : {
+        "!" : ["E", "$"],
+        "(" : ["E", "$"],
+        "id" : ["E", "$"]
+    },
     "E" : {
         "!" : ["T", "E'"],
         "(" : ["T", "E'"],
@@ -55,7 +60,7 @@ console.log(table);
 var input = "(!P&&Q)->R$";
 var index = 0;
 
-function getNextLexeme() {
+function getNextToken() {
     if (input[index] === '$') {
         index++;
         return "$";
@@ -91,9 +96,65 @@ function getNextLexeme() {
     if(identifier === "") {
         throw "Lexing Error";
     }
-    return identifier;
+    return "~"+identifier;
 }
 
 function isValid(char) {
     return (char <= 'Z' && char >= 'A') || (char <= 'z' && char >= 'a') || (char <= '9' && char >= '0')
 }
+
+function Node(data) {
+    this.data = data;
+    this.children = [];
+}
+
+function Tree(data) {
+    var node = new Node(data);
+    this._root = node;
+}
+
+var parse_tree = new Tree("S");
+
+var tree_stack = [];
+tree_stack.push(parse_tree);
+
+function parse() {
+    var a = getNextToken();
+    var identifier = "";
+    if (a[0] === "~") {
+        identifier = a;
+        a = "id";
+    }
+    var X = tree_stack[0]._root.data;
+    while(X !== "$") {
+        if (X === a) {
+            var toReduce = tree_stack.pop();
+            if (a === "id") {
+                toReduce._root.data = identifier;
+            }
+            a = getNextToken();
+            if (a[0] === "~") {
+                identifier = a;
+                a = "id";
+            }
+        } else if (a in table[X]) {
+            var toReduce = tree_stack.pop();
+            var alpha = table[X][a];
+            if ( alpha !== "e") {
+                var children = [];
+                for(var i = alpha.length - 1; i >= 0; i--) {
+                    var tree = new Tree(alpha[i]);
+                    tree_stack.push(tree);
+                    children.push(tree);
+                }
+                toReduce._root.children = children;
+            } 
+        } else {
+            throw "Parse Error";
+        }
+        X = tree_stack[tree_stack.length - 1]._root.data;
+    }
+    return parse_tree;
+}
+
+parse();
