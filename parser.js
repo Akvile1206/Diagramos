@@ -1,4 +1,3 @@
-
 //LL(1) parsing table for logical expressions
 
 var table = {
@@ -53,9 +52,6 @@ var table = {
         "id" : ["id"]
     }
   };
-
-  
-console.log(table);
 
 var input = "A->(B->C)$";//"!P&&Q->R$";
 var index = 0;
@@ -114,9 +110,7 @@ function Tree(data) {
 }
 
 var parse_tree = new Tree("S");
-
 var tree_stack = [];
-tree_stack.push(parse_tree);
 
 function parse() {
     var a = getNextToken();
@@ -158,9 +152,6 @@ function parse() {
     }
     return parse_tree;
 }
-
-parse();
-console.log(parse_tree);
 
 function generateAST(tree, optional_left) {
     if (tree._root.data[0] === '~') {
@@ -222,5 +213,15 @@ function generateAST(tree, optional_left) {
       }
 }
 
-var AST = generateAST(parse_tree);
-console.log(AST);
+function getAST(expression) {
+    input = expression;
+    index = 0;
+    parse_tree = new Tree("S");
+    tree_stack = [];
+    tree_stack.push(parse_tree);
+    parse();
+    var AST = generateAST(parse_tree);
+    return AST;
+}
+
+export {getAST};
