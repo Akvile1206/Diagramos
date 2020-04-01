@@ -57,7 +57,7 @@ var table = {
   
 console.log(table);
 
-var input = "(!P&&Q)->R$";
+var input = "A->(B->C)$";//"!P&&Q->R$";
 var index = 0;
 
 function getNextToken() {
@@ -94,7 +94,7 @@ function getNextToken() {
         character = input[index];
     }
     if(identifier === "") {
-        throw "Lexing Error";
+        throw "Lexing Error: index "+index + " in string "+input;
     }
     return "~"+identifier;
 }
@@ -148,7 +148,9 @@ function parse() {
                     children.push(tree);
                 }
                 toReduce._root.children = children;
-            } 
+            } else {
+                toReduce._root.children.push(new Tree("e"));
+            }
         } else {
             throw "Parse Error";
         }
@@ -158,3 +160,67 @@ function parse() {
 }
 
 parse();
+console.log(parse_tree);
+
+function generateAST(tree, optional_left) {
+    if (tree._root.data[0] === '~') {
+        return new Tree(tree._root.data);
+    }
+    switch (tree._root.data) {
+        case "S":
+          var E_AST = generateAST(tree._root.children[1]);
+          var $_AST = new Tree("$");
+          $_AST._root.children.push(E_AST);
+          return $_AST;
+        case "E":
+            var T_AST = generateAST(tree._root.children[1]);
+            return generateAST(tree._root.children[0], T_AST);
+        case "E'":
+            if (tree._root.children[0]._root.data === "e") {
+                return optional_left;
+            }
+            var Eprime_AST = new Tree(tree._root.children[2]._root.data); 
+            var T_AST = generateAST(tree._root.children[1]);
+            Eprime_AST._root.children = [optional_left, T_AST];
+            return generateAST(tree._root.children[0], Eprime_AST);
+        case "T":
+            var F_AST = generateAST(tree._root.children[1]);
+            return generateAST(tree._root.children[0], F_AST);
+        case "T'":
+            if (tree._root.children[0]._root.data === "e") {
+                return optional_left;
+            }
+            var Tprime_AST = new Tree("||"); 
+            var F_AST = generateAST(tree._root.children[1]);
+            Tprime_AST._root.children = [optional_left, F_AST];
+            return generateAST(tree._root.children[0], Tprime_AST);
+        case "F":
+            var N_AST = generateAST(tree._root.children[1]);
+            return generateAST(tree._root.children[0], N_AST);
+        case "F'":
+            if (tree._root.children[0]._root.data === "e") {
+                return optional_left;
+            }
+            var Fprime_AST = new Tree("&&"); 
+            var N_AST = generateAST(tree._root.children[1]);
+            Fprime_AST._root.children = [optional_left, N_AST];
+            return generateAST(tree._root.children[0], Fprime_AST);
+        case "N":
+            if (tree._root.children.length === 1) {
+                return generateAST(tree._root.children[0]);
+            }
+            var N_AST = new Tree("!");
+            N_AST._root.children[0] = generateAST(tree._root.children[0]);
+            return N_AST;
+        case "P":
+            if (tree._root.children.length === 1) {
+                return generateAST(tree._root.children[0]);
+            }
+            return generateAST(tree._root.children[1]);
+        default:
+          throw "AST error";
+      }
+}
+
+var AST = generateAST(parse_tree);
+console.log(AST);
