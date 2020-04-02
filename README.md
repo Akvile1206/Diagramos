@@ -21,3 +21,5 @@ Here is the list of operations supported by Diagramos (in the order of precedenc
 * ***implication*** and ***bi-implication*** as infix operators `->` and `<->` respectively. Both associate to the right.
 
 Parenthesese `(` `)` around an expression are also supported.
+
+Input must end with `$` character!
