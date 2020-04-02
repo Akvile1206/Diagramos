@@ -1,5 +1,6 @@
 import {getAST} from "./parser.js";
 import {generateBDD} from "./bdd.js";
+import * as vis from "./vis-network.js";
 
 var ast = null;
 var bdd = null;
