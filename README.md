@@ -19,4 +19,5 @@ Here is the list of operations supported by Diagramos (in the order of precedenc
 * ***conjunction*** as an infix operator `&&`. Associates to the right.
 * ***disjunction*** as an infix operator `||`. Associates to the right.
 * ***implication*** and ***bi-implication*** as infix operators `->` and `<->` respectively. Both associate to the right.
+
 Parenthesese `(` `)` around an expression are also supported.
