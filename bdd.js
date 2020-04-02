@@ -13,6 +13,9 @@ var zero = new BDDNode("0", "0", null, null);
 tree_map.set("0", zero);
 
 function createTree(key, data, negative, positive) {
+    if(negative.key == positive.key) {
+        return positive;
+    }
     var gotten = tree_map.get(key);
     if (typeof gotten === 'undefined') {
         var new_tree = new BDDNode(key, data, negative, positive);
@@ -186,4 +189,12 @@ function apply_negation(bdd) {
     return createTree(new_key, bdd.data, neg, pos);
 }
 
-export {AST_to_BDD};
+function generateBDD(ast) {
+    tree_map = new Map();
+    one = new BDDNode("1", "1", null, null);
+    tree_map.set("1", one);
+    zero = new BDDNode("0", "0", null, null);
+    tree_map.set("0", zero);
+    return AST_to_BDD(ast);
+}
+export {generateBDD};

@@ -1,5 +1,5 @@
 import {getAST} from "./parser.js";
-import {AST_to_BDD} from "./bdd.js";
+import {generateBDD} from "./bdd.js";
 
 var ast = null;
 var bdd = null;
@@ -8,21 +8,21 @@ var nodes = null;
 var edges = null;
 var network = null;
 
-function enumerateNodes(bddNode, number) {
+var number = 0;
+
+function enumerateNodes(bddNode) {
     if (typeof bddNode.key === "number") {
-        return bddNode.key;
-    } 
+        return;
+    }
     if (bddNode.data === "0" || bddNode.data === "1") {
         bddNode.key = number;
-        return number;
+        number++;
+        return;
     }
-
-    var n = enumerateNodes(bddNode.negative, number);
-    var max = n > number ? n : number;
-    var m = enumerateNodes(bddNode.positive, max + 1);
-    var max = m > max ? m : max;
-    bddNode.key = max + 1;
-    return max + 1;
+    bddNode.key = number;
+    number++;
+    enumerateNodes(bddNode.negative);
+    enumerateNodes(bddNode.positive);
 }
 
 function generateNodes(bddNode, level) {
@@ -51,17 +51,12 @@ function destroy() {
 }
 
 function draw() {
-    
   destroy();
   nodes = [];
   edges = [];
-  var connectionCount = [];
-
-  ast = getAST("!P&&Q->R$");
-  bdd = AST_to_BDD(ast);
-  enumerateNodes(bdd, 0);
+  number = 0;
+  enumerateNodes(bdd);
   generateNodes(bdd, 0);
-
   // create a network
   var container = document.getElementById("mynetwork");
   var data = {
@@ -80,30 +75,21 @@ function draw() {
   network = new vis.Network(container, data, options);
 }
 
+var BDD_input = document.getElementById("BDDinput");
+var btnGenerate = document.getElementById("generate");
+btnGenerate.onclick = function() {
+  if(BDD_input.value[BDD_input.value.length - 1] != '$') {
+    BDD_input.value = BDD_input.value + "$"; 
+  }
+  ast = null;
+  bdd = null;
+  ast = getAST(BDD_input.value);
+  bdd = generateBDD(ast);
+  draw();
+};
+
+var input = "!P&&Q->R$";
+ast = getAST(input);
+bdd = generateBDD(ast);
 draw();
-
-/*var directionInput = document.getElementById("direction");
-var btnUD = document.getElementById("btn-UD");
-btnUD.onclick = function() {
-  directionInput.value = "UD";
-  draw();
-};
-var btnDU = document.getElementById("btn-DU");
-btnDU.onclick = function() {
-  directionInput.value = "DU";
-  draw();
-};
-var btnLR = document.getElementById("btn-LR");
-btnLR.onclick = function() {
-  directionInput.value = "LR";
-  draw();
-};
-var btnRL = document.getElementById("btn-RL");
-btnRL.onclick = function() {
-  directionInput.value = "RL";
-  draw();
-};
-
-window.addEventListener("load", () => {
-  draw();
-});*/
+BDD_input.value = input;
