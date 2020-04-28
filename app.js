@@ -11,19 +11,18 @@ var network = null;
 
 var number = 0;
 
-function enumerateNodes(bddNode) {
+function enumerateNodes(bddNode, f, n) {
     if (typeof bddNode.key === "number") {
+        f(n);
         return;
     }
     if (bddNode.data === "0" || bddNode.data === "1") {
-        bddNode.key = number;
-        number++;
+        bddNode.key = n;
+        f(n+1);
         return;
     }
-    bddNode.key = number;
-    number++;
-    enumerateNodes(bddNode.negative);
-    enumerateNodes(bddNode.positive);
+    bddNode.key = n;
+    enumerateNodes(bddNode.negative, function(i) {enumerateNodes(bddNode.positive, f, i)}, n+1);
 }
 
 function generateNodes(bddNode, level) {
@@ -56,9 +55,8 @@ function draw() {
   nodes = [];
   edges = [];
   number = 0;
-  enumerateNodes(bdd);
+  enumerateNodes(bdd, function() {return;}, 0);
   generateNodes(bdd, 0);
-  // create a network
   var container = document.getElementById("mynetwork");
   var data = {
     nodes: nodes,
@@ -82,6 +80,7 @@ btnGenerate.onclick = function() {
   if(BDD_input.value[BDD_input.value.length - 1] != '$') {
     BDD_input.value = BDD_input.value + "$"; 
   }
+  nodes = null;
   ast = null;
   bdd = null;
   ast = getAST(BDD_input.value);

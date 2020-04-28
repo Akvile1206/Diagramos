@@ -29,7 +29,7 @@ function AST_to_BDD(ast) {
     if (ast._root.data[0] === '~') {
         var identifier = ast._root.data.slice(1, ast._root.data.length);
         var key = "0"+identifier+"1";
-        var tree = new BDDNode(key, identifier, zero, one);
+        var tree = createTree(key, identifier, zero, one);
         tree_map.set(key, tree);
         return tree;
     }
@@ -195,6 +195,7 @@ function generateBDD(ast) {
     tree_map.set("1", one);
     zero = new BDDNode("0", "0", null, null);
     tree_map.set("0", zero);
-    return AST_to_BDD(ast);
+    var bdd = AST_to_BDD(ast);
+    return bdd;
 }
 export {generateBDD};
